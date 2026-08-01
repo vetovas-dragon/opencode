@@ -1,0 +1,3 @@
+# opencode
+
+my-project
