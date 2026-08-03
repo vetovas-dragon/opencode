@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>实训计划与待办</h3>
+    <div class="page-title">实训计划与待办</div>
     <el-form inline>
       <el-form-item label="计划名称"><el-input v-model="planForm.title" placeholder="如：本月问诊实训计划" /></el-form-item>
       <el-form-item label="周期"><el-input v-model="planForm.period" placeholder="如：2026-08" style="width: 130px" /></el-form-item>
@@ -28,7 +28,7 @@
       </el-table-column>
     </el-table>
 
-    <h4>待办事项</h4>
+    <div class="page-title" style="font-size:15px">待办事项</div>
     <el-input v-model="todoTitle" placeholder="新增待办" style="width: 320px" @keyup.enter="createTodo" />
     <el-button type="primary" plain style="margin-left: 8px" @click="createTodo">添加</el-button>
     <el-table :data="todos" border stripe style="margin-top: 12px">

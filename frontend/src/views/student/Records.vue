@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>问诊实训全程记录</h3>
+    <div class="page-title">问诊实训全程记录</div>
     <el-timeline v-if="records.length">
       <el-timeline-item
         v-for="r in records"

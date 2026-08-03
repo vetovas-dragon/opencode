@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>接诊工作台</h3>
+    <div class="page-title">接诊工作台</div>
     <el-tabs v-model="tab">
       <el-tab-pane label="待介入会话" name="pending">
         <el-table :data="pendingRows" border stripe>

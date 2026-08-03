@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>审核中心（问诊总结 / 实训计划）</h3>
+    <div class="page-title">审核中心（问诊总结 / 实训计划）</div>
     <el-tabs v-model="tab">
       <el-tab-pane label="问诊总结" name="summary">
         <el-table :data="pending.summaries" border stripe>

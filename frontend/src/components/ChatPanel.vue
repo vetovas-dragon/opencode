@@ -136,14 +136,49 @@ onUnmounted(() => ws?.close())
 
 <style scoped>
 .chat-panel { display: flex; flex-direction: column; height: 100%; }
-.msgs { flex: 1; min-height: 260px; max-height: 460px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px; padding: 12px; }
-.msg { margin-bottom: 10px; }
-.meta { color: #909399; font-size: 12px; }
-.bubble { background: #f4f4f5; border-radius: 6px; padding: 8px 10px; display: inline-block; max-width: 70%; }
-.msg.patient .bubble { background: #d9ecff; }
-.img { max-width: 220px; border-radius: 6px; display: block; }
-.voice .bubble { background: #fdf6ec; }
-.trans { color: #67c23a; font-size: 12px; margin-top: 2px; }
-.file-link { color: #409eff; }
-.input { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+.msgs {
+  flex: 1;
+  min-height: 300px;
+  max-height: 460px;
+  overflow-y: auto;
+  background: #f7f9fc;
+  border: 1px solid #eef1f6;
+  border-radius: 12px;
+  padding: 14px;
+}
+.msg { margin-bottom: 12px; }
+.meta { color: #a0a9b8; font-size: 11px; margin-bottom: 4px; }
+.bubble {
+  background: #fff;
+  border-radius: 12px 12px 12px 4px;
+  padding: 9px 12px;
+  display: inline-block;
+  max-width: 70%;
+  box-shadow: 0 1px 3px rgba(31, 45, 80, 0.08);
+  line-height: 1.6;
+  word-break: break-word;
+}
+.msg.patient .bubble {
+  background: var(--el-color-primary-light-9);
+  border-radius: 12px 12px 4px 12px;
+}
+.msg.doctor .bubble { background: #ecf9ef; border-radius: 12px 12px 12px 4px; }
+.msg.system .bubble { background: #fdf6ec; color: #b08a3c; }
+.img { max-width: 220px; border-radius: 10px; display: block; box-shadow: 0 1px 4px rgba(31, 45, 80, 0.12); }
+.voice .bubble { background: #fff; }
+.voice audio { display: block; }
+.trans { color: #52b788; font-size: 12px; margin-top: 4px; background: rgba(82, 183, 136, 0.08); display: inline-block; padding: 2px 8px; border-radius: 6px; }
+.file-link { color: #1677ff; text-decoration: underline; }
+.input {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+  background: #fff;
+  border: 1px solid #eef1f6;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 1px 4px rgba(31, 45, 80, 0.04);
+}
+.input :deep(.el-input__wrapper) { box-shadow: none; background: #f7f9fc; border-radius: 8px; }
 </style>

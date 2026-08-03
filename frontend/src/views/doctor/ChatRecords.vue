@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>问诊聊天记录</h3>
+    <div class="page-title">问诊聊天记录</div>
     <el-form inline>
       <el-form-item label="关键词">
         <el-input v-model="query.keyword" placeholder="检索消息内容（≥2字）" clearable @keyup.enter="search" />

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>学生信息管理</h3>
+    <div class="page-title">学生信息管理</div>
     <el-form inline>
       <el-form-item label="关键词">
         <el-input v-model="query.keyword" placeholder="姓名/学号" clearable @keyup.enter="load" />

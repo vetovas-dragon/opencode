@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>问诊总结</h3>
+    <div class="page-title">问诊总结</div>
     <el-form label-width="100px" style="max-width: 720px">
       <el-form-item label="关联会话">
         <el-select v-model="form.conversation_id" placeholder="选择已结束的问诊会话" style="width: 300px">
@@ -20,7 +20,7 @@
       </el-form-item>
     </el-form>
 
-    <h4>历史总结</h4>
+    <div class="page-title" style="font-size:15px">历史总结</div>
     <el-table :data="summaries" border stripe>
       <el-table-column prop="id" label="ID" width="70" />
       <el-table-column prop="conversation_id" label="会话" width="90" />

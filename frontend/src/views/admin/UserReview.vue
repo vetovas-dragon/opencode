@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>身份审核（医生 / 医学生）</h3>
+    <div class="page-title">身份审核（医生 / 医学生）</div>
     <el-table :data="pending" border stripe>
       <el-table-column prop="id" label="用户ID" width="90" />
       <el-table-column prop="name" label="姓名" width="120" />

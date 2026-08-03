@@ -1,20 +1,31 @@
 <template>
   <div class="register-page">
-    <el-card class="register-card">
-      <h2>注册账号</h2>
+    <el-card class="register-card" shadow="never">
+      <div class="head">
+        <h2>注册账号</h2>
+        <el-button link type="primary" @click="$router.push('/login')">已有账号？去登录</el-button>
+      </div>
       <el-steps :active="step" finish-status="success" simple>
         <el-step title="选择角色" />
         <el-step title="填写信息" />
       </el-steps>
 
       <template v-if="step === 0">
-        <el-radio-group v-model="form.role" class="role-group">
-          <el-radio-button value="doctor">医生</el-radio-button>
-          <el-radio-button value="student">医学生</el-radio-button>
-          <el-radio-button value="patient">患者</el-radio-button>
-        </el-radio-group>
-        <div class="tips">医生/医学生注册后需管理员人工审核；患者注册即时生效。</div>
-        <el-button type="primary" style="width: 100%" @click="step = 1">下一步</el-button>
+        <div class="role-grid">
+          <div
+            v-for="r in roles"
+            :key="r.value"
+            class="role-item"
+            :class="{ active: form.role === r.value }"
+            @click="form.role = r.value"
+          >
+            <div class="role-icon">{{ r.icon }}</div>
+            <div class="role-name">{{ r.label }}</div>
+            <div class="role-desc">{{ r.desc }}</div>
+          </div>
+        </div>
+        <div class="tips">{{ roleTip }}</div>
+        <el-button type="primary" style="width: 100%" size="large" @click="step = 1">下一步</el-button>
       </template>
 
       <template v-else>
@@ -61,7 +72,7 @@
           </template>
 
           <el-form-item>
-            <el-button type="primary" style="width: 100%" :loading="loading" @click="submit">提交注册</el-button>
+            <el-button type="primary" style="width: 100%" size="large" :loading="loading" @click="submit">提交注册</el-button>
           </el-form-item>
         </el-form>
         <el-button link type="primary" @click="step = 0">返回上一步</el-button>
@@ -71,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
@@ -81,6 +92,16 @@ const userStore = useUserStore()
 const step = ref(0)
 const sending = ref(false)
 const loading = ref(false)
+
+const roles = [
+  { value: 'patient', label: '患者', icon: '🧑‍⚕️', desc: '即时生效，可立即问诊' },
+  { value: 'student', label: '医学生', icon: '🎓', desc: '参与问诊实训、撰写总结' },
+  { value: 'doctor', label: '医生', icon: '🩺', desc: '带教审核、接诊介入' },
+]
+const roleTip = computed(
+  () => (form.role === 'patient' ? '患者注册后即时生效。' : '医生/医学生注册后需管理员人工审核，请耐心等待。'),
+)
+
 const form = reactive({
   contact: '',
   code: '',
@@ -100,7 +121,7 @@ async function sendCode() {
   sending.value = true
   try {
     await userStore.sendCode(form.contact)
-    ElMessage.success('验证码已发送')
+    ElMessage.success('验证码已发送（演示环境可查看后端日志）')
   } finally {
     sending.value = false
   }
@@ -120,7 +141,7 @@ async function submit() {
         student: form.role === 'student' ? form.student : undefined,
         patient: form.role === 'patient' ? form.patient : undefined,
       })
-      ElMessage.success(res.need_review ? '注册成功，请等待管理员审核' : '注册成功')
+      ElMessage.success(res.need_review ? '注册成功，请等待管理员审核' : '注册成功，请登录')
       router.push('/login')
     } finally {
       loading.value = false
@@ -132,8 +153,31 @@ async function submit() {
 </script>
 
 <style scoped>
-.register-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f0f2f5; padding: 24px; }
-.register-card { width: 560px; }
-.role-group { margin: 16px 0; }
-.tips { color: #909399; font-size: 12px; margin-bottom: 16px; }
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f1c35 0%, #16325e 55%, #1677ff 130%);
+  padding: 32px 16px;
+}
+.register-card { width: 620px; border-radius: 16px; }
+.head { display: flex; align-items: center; justify-content: space-between; }
+.head h2 { margin: 4px 0 14px; font-size: 24px; }
+.role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 12px; }
+.role-item {
+  border: 1.5px solid #e4e9f2;
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafbfe;
+}
+.role-item:hover { border-color: var(--otc-primary); transform: translateY(-2px); }
+.role-item.active { border-color: var(--otc-primary); background: var(--el-color-primary-light-9); }
+.role-icon { font-size: 30px; }
+.role-name { font-weight: 600; margin-top: 8px; }
+.role-desc { color: #8a94a6; font-size: 12px; margin-top: 4px; line-height: 1.5; }
+.tips { color: #909399; font-size: 12px; margin-bottom: 14px; }
 </style>

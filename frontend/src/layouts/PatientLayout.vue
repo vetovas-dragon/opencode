@@ -1,6 +1,6 @@
 <template>
   <div class="patient-layout">
-    <van-nav-bar title="在线问诊教学系统" />
+    <van-nav-bar class="nav" title="在线问诊教学系统" />
     <main class="content"><router-view /></main>
     <van-tabbar route>
       <van-tabbar-item replace to="/patient/home" icon="home-o">首页</van-tabbar-item>
@@ -43,5 +43,9 @@ onUnmounted(() => timer && clearInterval(timer))
 </script>
 
 <style scoped>
-.content { padding: 12px 12px 60px; }
+.nav :deep(.van-nav-bar__title) { color: #fff; }
+.nav :deep(.van-nav-bar__content) { justify-content: center; }
+.nav { background: linear-gradient(90deg, #0f1c35, #1677ff); }
+.content { padding: 12px 12px 64px; }
+.patient-layout :deep(.van-tabbar) { border-top: 1px solid #f0f2f5; }
 </style>
