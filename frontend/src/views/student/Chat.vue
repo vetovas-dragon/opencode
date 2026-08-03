@@ -12,10 +12,19 @@
         <template #reference>
           <el-button size="small" plain style="margin-left: 8px" @click="cardVisible = !cardVisible">档案卡片</el-button>
         </template>
-        <div>
-          <div>姓名：{{ card.name }}</div>
+        <div style="max-width: 260px">
+          <div><b>{{ card.name }}</b>（{{ card.gender || '-' }} · {{ card.ethnicity || '-' }}）</div>
           <div>手机号：{{ card.phone }}</div>
-          <div>最近活跃：{{ card.last_activity }}</div>
+          <div v-if="card.birth_date">出生日期：{{ card.birth_date }}</div>
+          <div v-if="card.address">住址：{{ card.address }}</div>
+          <div v-if="card.allergy_history">过敏史：{{ card.allergy_history }}</div>
+          <div>最近活跃：{{ card.last_activity || '-' }}</div>
+          <div v-if="card.recent_health?.length" style="margin-top: 6px; border-top: 1px solid #eee; padding-top: 6px">
+            <div style="font-weight: 600; margin-bottom: 4px">最近健康数据</div>
+            <div v-for="h in card.recent_health" :key="h.id" :class="{ abnormal: h.is_abnormal }">
+              {{ h.metric_type }}: {{ h.value_primary }}{{ h.value_secondary ? '/' + h.value_secondary : '' }}{{ h.unit }}（{{ h.measured_at.slice(5, 16).replace('T', ' ') }}）{{ h.is_abnormal ? '· 异常' : '' }}
+            </div>
+          </div>
         </div>
       </el-popover>
       <el-button size="small" plain style="margin-left: 8px" @click="translateDraft">汉→彝互转</el-button>
@@ -69,4 +78,5 @@ onMounted(load)
 
 <style scoped>
 .chat-card { margin-top: 16px; }
+.abnormal { color: #f56c6c; }
 </style>

@@ -11,6 +11,7 @@
         </el-menu-item>
         <el-menu-item index="/student/plans">实训计划</el-menu-item>
         <el-menu-item index="/student/summaries">问诊总结</el-menu-item>
+        <el-menu-item index="/student/records">实训记录</el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>

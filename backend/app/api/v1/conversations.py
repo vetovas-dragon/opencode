@@ -47,11 +47,34 @@ def start_conversation(
             db,
             patient=current_user if current_user.role.value == "patient" else db.get(User, body.patient_id),
             doctor_direct=body.doctor_direct or current_user.role.value == "doctor",
-            doctor_id=current_user.id if current_user.role.value == "doctor" else None,
+            doctor_id=body.doctor_id if current_user.role.value == "patient" else current_user.id,
         )
     except ValueError as exc:
         raise HTTPException(status_code=503, detail=str(exc))
     return {"id": conv.id, "status": conv.status.value}
+
+
+@router.get("/doctors")
+def list_doctors(db: Session = Depends(get_db), current_user: User = Depends(require_roles("patient"))):
+    """可选医生列表（患者直连问诊，F-108）。"""
+    from app.models.user import DoctorProfile
+
+    rows = db.execute(
+        select(User, DoctorProfile)
+        .join(DoctorProfile, DoctorProfile.user_id == User.id)
+        .where(User.role == "doctor", User.status == "active", User.is_deleted.is_(False))
+        .order_by(User.id)
+    ).all()
+    return [
+        {
+            "id": u.id,
+            "name": u.name,
+            "title": p.title,
+            "practice_scope": p.practice_scope,
+            "organization": p.organization,
+        }
+        for u, p in rows
+    ]
 
 
 @router.get("/mine")

@@ -12,7 +12,7 @@ from app.models.chat import Conversation
 from app.models.health import HealthData, MedicationLog, MetricType
 from app.models.reminder import HealthReminder, ReminderLog
 from app.models.user import PatientProfile, User
-from app.schemas.health import HealthDataCreate, ReminderCreate
+from app.schemas.health import HealthDataCreate, MedicationLogCreate, ReminderCreate
 
 router = APIRouter(prefix="/patient", tags=["患者端"])
 
@@ -136,6 +136,25 @@ def list_health_data(
     ]
 
 
+@router.post("/medication-logs")
+def create_medication_log(
+    body: MedicationLogCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(patient_required),
+):
+    """患者记录用药（F-305 用药时间轴数据源）。"""
+    log = MedicationLog(
+        patient_id=current_user.id,
+        medication_name=body.medication_name,
+        dosage=body.dosage,
+        taken_at=body.taken_at,
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(log)
+    return {"id": log.id, "message": "已记录用药"}
+
+
 @router.get("/medications")
 def medication_timeline(db: Session = Depends(get_db), current_user: User = Depends(patient_required)):
     """用药记录时间轴。"""
@@ -211,6 +230,31 @@ def my_reminders(db: Session = Depends(get_db), current_user: User = Depends(pat
             "push_enabled": r.push_enabled,
         }
         for r in rows
+    ]
+
+
+@router.get("/reminders/{reminder_id}/logs")
+def reminder_logs(
+    reminder_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(patient_required),
+):
+    """提醒发送记录（F-704）。"""
+    rows = db.scalars(
+        select(ReminderLog)
+        .where(ReminderLog.reminder_id == reminder_id, ReminderLog.patient_id == current_user.id)
+        .order_by(ReminderLog.id.desc())
+        .limit(20)
+    ).all()
+    return [
+        {
+            "id": l.id,
+            "sent_at": l.sent_at.isoformat(),
+            "delivery_status": l.delivery_status,
+            "feedback": l.feedback,
+            "feedback_at": l.feedback_at.isoformat() if l.feedback_at else None,
+        }
+        for l in rows
     ]
 
 

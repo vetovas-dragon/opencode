@@ -18,6 +18,22 @@ def create_conversation(
     doctor_id: int | None = None,
 ) -> Conversation:
     if doctor_direct:
+        from app.models.user import DoctorProfile, UserRole, UserStatus
+
+        if doctor_id:
+            doctor = db.get(User, doctor_id)
+            if not doctor or doctor.role.value != "doctor" or doctor.status != UserStatus.ACTIVE:
+                raise ValueError("所选医生不可用，请稍后再试")
+        else:
+            row = db.execute(
+                select(User.id)
+                .join(DoctorProfile, DoctorProfile.user_id == User.id)
+                .where(User.role == UserRole.DOCTOR, User.status == UserStatus.ACTIVE)
+                .order_by(User.id)
+            ).first()
+            if row is None:
+                raise ValueError("当前无可用医生，请稍后再试")
+            doctor_id = row[0]
         conv = Conversation(patient_id=patient.id, doctor_id=doctor_id)
     else:
         # 分配策略：优先负载最少（进行中会话数最少）的在岗医学生；后续可扩展排班策略

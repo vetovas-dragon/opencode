@@ -42,6 +42,7 @@
 
     <el-drawer v-model="msgVisible" :title="interactive ? '问诊会话（可互动）' : '完整聊天记录（全程留痕）'" size="60%">
       <template v-if="interactive">
+        <el-button size="small" type="primary" plain style="margin-bottom: 10px" @click="openProfile">维护患者档案</el-button>
         <ChatPanel :conversation-id="activeId" />
       </template>
       <template v-else>
@@ -52,6 +53,21 @@
         </div>
       </template>
     </el-drawer>
+
+    <el-dialog v-model="profileVisible" title="维护患者档案（协同更新）" width="480">
+      <el-form label-width="90px">
+        <el-form-item label="住址">
+          <el-input v-model="profileForm.address" />
+        </el-form-item>
+        <el-form-item label="过敏史">
+          <el-input v-model="profileForm.allergy_history" type="textarea" :rows="2" placeholder="如：青霉素过敏" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="profileVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveProfile">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -67,6 +83,9 @@ const messages = ref<any[]>([])
 const msgVisible = ref(false)
 const interactive = ref(false)
 const activeId = ref(0)
+const activePatientId = ref(0)
+const profileVisible = ref(false)
+const profileForm = reactive({ address: '', allergy_history: '' })
 
 async function load() {
   const params: any = { status: query.status || undefined }
@@ -91,11 +110,24 @@ function clearSearch() {
 
 async function openMessages(row: any) {
   activeId.value = row.id
+  activePatientId.value = row.patient_id
   interactive.value = row.status === 'active'
   if (!interactive.value) {
     messages.value = await http.get(`/doctor/conversations/${row.id}/messages`)
   }
   msgVisible.value = true
+}
+
+async function openProfile() {
+  profileForm.address = ''
+  profileForm.allergy_history = ''
+  profileVisible.value = true
+}
+
+async function saveProfile() {
+  await http.put(`/doctor/patients/${activePatientId.value}/profile`, profileForm)
+  ElMessage.success('档案已更新')
+  profileVisible.value = false
 }
 
 async function join(row: any) {

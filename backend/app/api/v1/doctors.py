@@ -199,6 +199,31 @@ def list_conversations(
     }
 
 
+@router.put("/patients/{patient_id}/profile")
+def update_patient_profile(
+    patient_id: int,
+    body: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(doctor_required),
+):
+    """医患协同维护档案（F-503）：医生更新患者基础非临床字段。"""
+    from app.models.user import PatientProfile
+
+    profile = db.scalar(select(PatientProfile).where(PatientProfile.user_id == patient_id))
+    if not profile:
+        raise HTTPException(status_code=404, detail="患者档案不存在")
+    if "address" in body:
+        profile.address = body["address"]
+    if "allergy_history" in body:
+        profile.allergy_history = body["allergy_history"]
+    db.add(AuditLog(
+        user_id=current_user.id, action="update_patient_profile",
+        target_type="patient", target_id=patient_id,
+    ))
+    db.commit()
+    return {"message": "档案已更新"}
+
+
 @router.get("/conversations/{conversation_id}/messages")
 def conversation_messages(
     conversation_id: int,
@@ -247,6 +272,7 @@ def create_score(
         db,
         student_id=body.student_id,
         reviewer_id=current_user.id,
+        summary_id=body.summary_id,
         q_consultation=body.q_consultation,
         q_history=body.q_history,
         q_communication=body.q_communication,

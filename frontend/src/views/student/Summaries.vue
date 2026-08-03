@@ -33,7 +33,29 @@
         </template>
       </el-table-column>
       <el-table-column prop="review_comment" label="审核意见" show-overflow-tooltip />
+      <el-table-column label="操作" width="110">
+        <template #default="{ row }">
+          <el-button v-if="row.status === 'rejected'" size="small" type="warning" plain @click="openEdit(row)">编辑重提</el-button>
+        </template>
+      </el-table-column>
     </el-table>
+
+    <el-dialog v-model="editVisible" title="编辑总结并重新提交" width="620">
+      <el-form label-width="90px">
+        <el-form-item label="主诉">
+          <el-input v-model="editForm.chief_complaint" maxlength="100" show-word-limit />
+        </el-form-item>
+        <el-form-item label="现病史"><el-input v-model="editForm.present_illness" type="textarea" :rows="3" /></el-form-item>
+        <el-form-item label="既往史"><el-input v-model="editForm.past_illness" type="textarea" :rows="2" /></el-form-item>
+        <el-form-item label="问诊过程"><el-input v-model="editForm.consultation_process" type="textarea" :rows="3" /></el-form-item>
+        <el-form-item label="初步判断"><el-input v-model="editForm.initial_diagnosis" /></el-form-item>
+        <el-form-item label="诊疗建议"><el-input v-model="editForm.treatment_advice" type="textarea" :rows="2" /></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editVisible = false">取消</el-button>
+        <el-button type="primary" @click="resubmit">重新提交</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -54,6 +76,16 @@ const form = reactive({
   initial_diagnosis: '',
   treatment_advice: '',
 })
+const editVisible = ref(false)
+const editId = ref(0)
+const editForm = reactive({
+  chief_complaint: '',
+  present_illness: '',
+  past_illness: '',
+  consultation_process: '',
+  initial_diagnosis: '',
+  treatment_advice: '',
+})
 
 async function load() {
   convs.value = await http.get('/student/conversations')
@@ -67,6 +99,26 @@ async function submit() {
   }
   await http.post('/student/summaries', form)
   ElMessage.success('已提交，等待医生审核')
+  load()
+}
+
+function openEdit(row: any) {
+  editId.value = row.id
+  Object.assign(editForm, {
+    chief_complaint: row.chief_complaint || '',
+    present_illness: row.present_illness || '',
+    past_illness: row.past_illness || '',
+    consultation_process: row.consultation_process || '',
+    initial_diagnosis: row.initial_diagnosis || '',
+    treatment_advice: row.treatment_advice || '',
+  })
+  editVisible.value = true
+}
+
+async function resubmit() {
+  await http.post('/student/summaries', { conversation_id: summaries.value.find((s) => s.id === editId.value)?.conversation_id, ...editForm })
+  ElMessage.success('已重新提交，等待医生审核')
+  editVisible.value = false
   load()
 }
 

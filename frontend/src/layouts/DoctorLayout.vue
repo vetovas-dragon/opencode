@@ -4,6 +4,7 @@
       <div class="brand">在线问诊教学系统 · 医生端</div>
       <el-menu :default-active="$route.path" router>
         <el-menu-item index="/doctor/students">学生管理</el-menu-item>
+        <el-menu-item index="/doctor/intervene">接诊工作台</el-menu-item>
         <el-menu-item index="/doctor/records">
           <el-badge :value="unread" :hidden="!unread" class="menu-badge">
             <span>问诊记录</span>

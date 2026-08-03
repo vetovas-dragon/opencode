@@ -24,6 +24,12 @@ class HealthDataOut(BaseModel):
     is_abnormal: bool
 
 
+class MedicationLogCreate(BaseModel):
+    medication_name: str = Field(..., min_length=1, max_length=100)
+    dosage: str | None = Field(default=None, max_length=100)
+    taken_at: datetime
+
+
 class MedicationOut(BaseModel):
     id: int
     medication_name: str

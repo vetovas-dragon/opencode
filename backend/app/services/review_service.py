@@ -50,11 +50,12 @@ def compute_grade(total: int) -> str:
     return "不合格"
 
 
-def create_score(db: Session, *, student_id: int, reviewer_id: int, **dims) -> ScoreRecord:
+def create_score(db: Session, *, student_id: int, reviewer_id: int, summary_id: int | None = None, **dims) -> ScoreRecord:
     total = sum(int(v) for k, v in dims.items() if k.startswith("q_"))
     record = ScoreRecord(
         student_id=student_id,
         reviewer_id=reviewer_id,
+        summary_id=summary_id,
         **{k: int(v) for k, v in dims.items() if k.startswith("q_")},
         total=total,
         grade=compute_grade(total),

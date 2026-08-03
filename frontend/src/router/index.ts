@@ -27,6 +27,7 @@ const router = createRouter({
       meta: { role: 'doctor' },
       children: [
         { path: 'students', component: () => import('@/views/doctor/StudentManage.vue') },
+        { path: 'intervene', component: () => import('@/views/doctor/Intervene.vue') },
         { path: 'records', component: () => import('@/views/doctor/ChatRecords.vue') },
         { path: 'reviews', component: () => import('@/views/doctor/Reviews.vue') },
         { path: 'stats', component: () => import('@/views/doctor/Stats.vue') },
@@ -44,6 +45,7 @@ const router = createRouter({
         { path: 'chat', component: () => import('@/views/student/Chat.vue') },
         { path: 'plans', component: () => import('@/views/student/Plan.vue') },
         { path: 'summaries', component: () => import('@/views/student/Summaries.vue') },
+        { path: 'records', component: () => import('@/views/student/Records.vue') },
       ],
     },
 
@@ -59,6 +61,7 @@ const router = createRouter({
         { path: 'profile', component: () => import('@/views/patient/Profile.vue') },
         { path: 'health', component: () => import('@/views/patient/HealthData.vue') },
         { path: 'reminders', component: () => import('@/views/patient/Reminders.vue') },
+        { path: 'voice', component: () => import('@/views/patient/Voice.vue') },
       ],
     },
 

@@ -7,9 +7,10 @@ from sqlalchemy.orm import Session
 from app.core.deps import get_current_user, require_roles
 from app.db.session import get_db
 from app.models.chat import Conversation
-from app.models.education import PlanStatus, PlanTodo, TodoStatus, TrainingPlan
+from app.models.education import PlanStatus, PlanTodo, ScoreRecord, TodoStatus, TrainingPlan
+from app.models.health import HealthData
 from app.models.record import ConsultationSummary, SummaryStatus
-from app.models.user import User
+from app.models.user import PatientProfile, User
 from app.schemas.education import PlanCreate, PlanTodoCreate, SummaryCreate
 
 router = APIRouter(prefix="/student", tags=["医学生工作台"])
@@ -53,10 +54,33 @@ def patient_card(
     patient = db.get(User, conv.patient_id)
     if not patient:
         raise HTTPException(status_code=404, detail="患者不存在")
+    profile = db.scalar(select(PatientProfile).where(PatientProfile.user_id == conv.patient_id))
+    health = db.scalars(
+        select(HealthData)
+        .where(HealthData.patient_id == conv.patient_id)
+        .order_by(HealthData.measured_at.desc())
+        .limit(5)
+    ).all()
     return {
         "name": patient.name,
         "phone": patient.phone,
+        "gender": profile.gender if profile else None,
+        "birth_date": profile.birth_date if profile else None,
+        "ethnicity": profile.ethnicity if profile else None,
+        "address": profile.address if profile else None,
+        "allergy_history": profile.allergy_history if profile else None,
         "last_activity": patient.last_login_at.isoformat() if patient.last_login_at else None,
+        "recent_health": [
+            {
+                "metric_type": h.metric_type.value,
+                "value_primary": h.value_primary,
+                "value_secondary": h.value_secondary,
+                "unit": h.unit,
+                "measured_at": h.measured_at.isoformat(),
+                "is_abnormal": h.is_abnormal,
+            }
+            for h in health
+        ],
     }
 
 
@@ -200,6 +224,11 @@ def my_summaries(db: Session = Depends(get_db), current_user: User = Depends(stu
             "id": s.id,
             "conversation_id": s.conversation_id,
             "chief_complaint": s.chief_complaint,
+            "present_illness": s.present_illness,
+            "past_illness": s.past_illness,
+            "consultation_process": s.consultation_process,
+            "initial_diagnosis": s.initial_diagnosis,
+            "treatment_advice": s.treatment_advice,
             "status": s.status.value,
             "review_comment": s.review_comment,
         }
@@ -209,16 +238,43 @@ def my_summaries(db: Session = Depends(get_db), current_user: User = Depends(stu
 
 @router.get("/records")
 def my_training_records(db: Session = Depends(get_db), current_user: User = Depends(student_required)):
-    """问诊实训全程记录（会话+总结+审核结果）。"""
+    """问诊实训全程记录（会话+总结+审核+评分，F-205）。"""
     convs = db.scalars(
         select(Conversation).where(Conversation.student_id == current_user.id).order_by(Conversation.id.desc())
     ).all()
-    return [
-        {
-            "conversation_id": c.id,
-            "status": c.status.value,
-            "created_at": c.created_at.isoformat(),
-            "summary": None,
-        }
-        for c in convs
-    ]
+    summaries = {
+        s.conversation_id: s
+        for s in db.scalars(
+            select(ConsultationSummary).where(ConsultationSummary.student_id == current_user.id)
+        ).all()
+    }
+    scores = db.scalars(select(ScoreRecord).where(ScoreRecord.student_id == current_user.id)).all()
+    score_by_summary = {s.summary_id: s for s in scores}
+    items = []
+    for c in convs:
+        summary = summaries.get(c.id)
+        score = score_by_summary.get(summary.id) if summary else None
+        items.append(
+            {
+                "conversation_id": c.id,
+                "status": c.status.value,
+                "created_at": c.created_at.isoformat(),
+                "summary": {
+                    "id": summary.id,
+                    "status": summary.status.value,
+                    "review_comment": summary.review_comment,
+                    "updated_at": summary.updated_at.isoformat() if summary.updated_at else None,
+                }
+                if summary
+                else None,
+                "score": {
+                    "total": score.total,
+                    "grade": score.grade,
+                    "comment": score.comment,
+                    "created_at": score.created_at.isoformat(),
+                }
+                if score
+                else None,
+            }
+        )
+    return items

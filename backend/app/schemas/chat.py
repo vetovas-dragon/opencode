@@ -9,6 +9,7 @@ from app.models.user import UserRole
 class ConversationCreate(BaseModel):
     patient_id: int | None = Field(default=None, description="默认取当前登录患者")
     doctor_direct: bool = Field(default=False, description="医生直接问诊（跳过医学生）")
+    doctor_id: int | None = Field(default=None, description="指定医生（医生直连问诊时）")
 
 
 class ConversationOut(BaseModel):
